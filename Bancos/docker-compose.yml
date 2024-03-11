@@ -1,0 +1,19 @@
+version: '3.5'
+services:
+  database:
+    build:
+      context: .
+    ports:
+        - "3306:3036"
+    environment:
+        MYSQL_ROOT_PASSWORD: RootPassword
+        MYSQL_DATABASE: Backoffice
+        MYSQL_USER: MainUser
+        MYSQL_PASSWORD: MainPassword
+    volumes:
+        db-volume:/var/lib/mysql
+    networks:
+      - amundsennet
+volumes:
+    db-volume:
+
