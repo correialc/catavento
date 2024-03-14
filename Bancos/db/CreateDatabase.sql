@@ -1,7 +1,7 @@
 USE Backoffice;
 CREATE TABLE user (
     id integer not null auto_increment,
-    is_active boolean not ,
+    is_active boolean not null,
     created_date datetime not null,
     name varchar(200)
 );
