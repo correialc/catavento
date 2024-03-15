@@ -1,10 +1,10 @@
-version: '3.5'
+version: '3.8'
 services:
   database:
     build:
       context: .
     ports:
-        - "3306:3036"
+        - "3306:3306"
     environment:
         MYSQL_ROOT_PASSWORD: RootPassword
         MYSQL_DATABASE: Backoffice
@@ -14,8 +14,10 @@ services:
       - db-volume:/var/lib/mysql
     networks:
       - amundsennet
+
 volumes:
     db-volume:
 
 networks:
   amundsennet:
+    name: amundsennet

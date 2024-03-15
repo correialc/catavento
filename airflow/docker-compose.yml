@@ -247,3 +247,5 @@ volumes:
 
 networks:
   amundsennet:
+    name: amundsennet
+    external: true
