@@ -16,12 +16,8 @@ from databuilder.publisher.neo4j_csv_publisher import Neo4jCsvPublisher
 from databuilder.task.task import DefaultTask
 from databuilder.transformer.base_transformer import NoopTransformer
 
-from utils import get_conexao_airflow
+from utils import get_conexao_airflow, get_info_conexao_neo4j
 
-NEO4J_ENDPOINT = 'bolt://neo4j_amundsen:7687'
-neo4j_endpoint = NEO4J_ENDPOINT
-neo4j_user = 'neo4j'
-neo4j_password = 'test'
 
 es = Elasticsearch([
     {'host': 'elasticsearch'},
@@ -33,6 +29,7 @@ OPTIONAL_TABLE_NAMES = ''
 
 NOME_CONEXAO_POSTGRES = "CONEXAO_METADADOS_POSTGRES"
 
+
 def extrair_metadados_postgres():
     where_clause_suffix = f'st.schemaname in {SUPPORTED_SCHEMA_SQL_IN_CLAUSE}'
 
@@ -41,6 +38,7 @@ def extrair_metadados_postgres():
     relationship_files_folder = f'{tmp_folder}/relationships/'
 
     string_conexao_postgres = get_conexao_airflow(NOME_CONEXAO_POSTGRES)
+    conexao_neo4j = get_info_conexao_neo4j()
 
     job_config = ConfigFactory.from_dict({
         f'extractor.postgres_metadata.{PostgresMetadataExtractor.WHERE_CLAUSE_SUFFIX_KEY}': where_clause_suffix,
@@ -50,9 +48,9 @@ def extrair_metadados_postgres():
         f'loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.RELATION_DIR_PATH}': relationship_files_folder,
         f'publisher.neo4j.{neo4j_csv_publisher.NODE_FILES_DIR}': node_files_folder,
         f'publisher.neo4j.{neo4j_csv_publisher.RELATION_FILES_DIR}': relationship_files_folder,
-        f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_END_POINT_KEY}': neo4j_endpoint,
-        f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_USER}': neo4j_user,
-        f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_PASSWORD}': neo4j_password,
+        f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_END_POINT_KEY}': conexao_neo4j["endpoint"],
+        f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_USER}': conexao_neo4j["usuario"],
+        f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_PASSWORD}': conexao_neo4j["senha"],
         f'publisher.neo4j.{neo4j_csv_publisher.JOB_PUBLISH_TAG}': 'metadados_postgresql',
     })
     job = DefaultJob(conf=job_config,
@@ -73,12 +71,14 @@ def indexar_metadados_postgres():
     elasticsearch_new_index_key_type = 'table'
     elasticsearch_index_alias = 'table_search_index'
 
+    conexao_neo4j = get_info_conexao_neo4j()
+
     job_config = ConfigFactory.from_dict({
-        f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.GRAPH_URL_CONFIG_KEY}': neo4j_endpoint,
+        f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.GRAPH_URL_CONFIG_KEY}': conexao_neo4j["endpoint"],
         f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.MODEL_CLASS_CONFIG_KEY}':
             'databuilder.models.table_elasticsearch_document.TableESDocument',
-        f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.NEO4J_AUTH_USER}': neo4j_user,
-        f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.NEO4J_AUTH_PW}': neo4j_password,
+        f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.NEO4J_AUTH_USER}': conexao_neo4j["usuario"],
+        f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.NEO4J_AUTH_PW}': conexao_neo4j["senha"],
         f'loader.filesystem.elasticsearch.{FSElasticsearchJSONLoader.FILE_PATH_CONFIG_KEY}': extracted_search_data_path,
         f'loader.filesystem.elasticsearch.{FSElasticsearchJSONLoader.FILE_MODE_CONFIG_KEY}': 'w',
         f'publisher.elasticsearch.{ElasticsearchPublisher.FILE_PATH_CONFIG_KEY}': extracted_search_data_path,
