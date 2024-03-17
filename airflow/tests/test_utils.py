@@ -1,10 +1,17 @@
+import pytest
+
 from utils import get_conexao_airflow, get_info_conexao_neo4j
 from extracao_postgresql import NOME_CONEXAO_POSTGRES
+from extracao_mysql import NOME_CONEXAO_MYSQL
 
 
-def test_get_conexao_airflow_formato_uri() -> None:
+@pytest.mark.parametrize(('nome_conexao', 'prefixo_conexao'), [
+    (NOME_CONEXAO_POSTGRES, 'postgresql://'),
+    (NOME_CONEXAO_MYSQL, 'mysql://'),
+])
+def test_get_conexao_airflow_formato_uri(nome_conexao: str, prefixo_conexao: str) -> None:
     """Deve retornar uma conexao Airflow em formato URI."""
-    assert get_conexao_airflow(NOME_CONEXAO_POSTGRES).startswith('postgresql:/')
+    assert get_conexao_airflow(nome_conexao).startswith(prefixo_conexao)
 
 
 def test_get_info_conexao_neo4j() -> None:
