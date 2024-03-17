@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 
-from extracao_postgresql import extrair_metadados_postgres, indexar_metadados_postgresql
+from extracao_postgresql import extrair_metadados_postgres, indexar_metadados_postgres
 
 dag_args = {
     'concurrency': 10,
@@ -26,9 +26,9 @@ with DAG('metadados_postgres_dag', default_args=default_args, **dag_args) as dag
         python_callable=extrair_metadados_postgres
     )
 
-    indexacao_metadados_postgresql_task = PythonOperator(
-        task_id='indexacao_metadados_postgresql',
-        python_callable=indexar_metadados_postgresql
+    indexacao_metadados_postgres_task = PythonOperator(
+        task_id='indexacao_metadados_postgres',
+        python_callable=indexar_metadados_postgres
     )
 
-    extracao_metadados_postgres_task >> indexacao_metadados_postgresql_task
+    extracao_metadados_postgres_task >> indexacao_metadados_postgres_task
