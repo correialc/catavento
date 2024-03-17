@@ -18,7 +18,7 @@ es = Elasticsearch([
     {'host': 'elasticsearch'},
 ])
 
-def indexar_metadados_postgres():
+def indexar_metadados():
     extracted_search_data_path = '/var/tmp/amundsen/search_data.json'
 
     task = DefaultTask(loader=FSElasticsearchJSONLoader(),
