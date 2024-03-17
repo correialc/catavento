@@ -1,4 +1,5 @@
 import uuid
+
 from pyhocon import ConfigFactory
 
 from elasticsearch import Elasticsearch
@@ -15,6 +16,8 @@ from databuilder.publisher.neo4j_csv_publisher import Neo4jCsvPublisher
 from databuilder.task.task import DefaultTask
 from databuilder.transformer.base_transformer import NoopTransformer
 
+from utils import get_conexao_airflow
+
 NEO4J_ENDPOINT = 'bolt://neo4j_amundsen:7687'
 neo4j_endpoint = NEO4J_ENDPOINT
 neo4j_user = 'neo4j'
@@ -28,15 +31,7 @@ SUPPORTED_SCHEMAS = ['public']
 SUPPORTED_SCHEMA_SQL_IN_CLAUSE = "('{schemas}')".format(schemas="', '".join(SUPPORTED_SCHEMAS))
 OPTIONAL_TABLE_NAMES = ''
 
-
-def connection_string():
-    user = 'airflow'
-    password = 'airflow'
-    host = 'airflow-postgres-1'
-    port = '5432'
-    db = 'airflow'
-    return "postgresql://%s:%s@%s:%s/%s" % (user, password, host, port, db)
-
+NOME_CONEXAO_POSTGRES = "CONEXAO_METADADOS_POSTGRES"
 
 def extrair_metadados_postgres():
     where_clause_suffix = f'st.schemaname in {SUPPORTED_SCHEMA_SQL_IN_CLAUSE}'
@@ -45,10 +40,12 @@ def extrair_metadados_postgres():
     node_files_folder = f'{tmp_folder}/nodes/'
     relationship_files_folder = f'{tmp_folder}/relationships/'
 
+    string_conexao_postgres = get_conexao_airflow(NOME_CONEXAO_POSTGRES)
+
     job_config = ConfigFactory.from_dict({
         f'extractor.postgres_metadata.{PostgresMetadataExtractor.WHERE_CLAUSE_SUFFIX_KEY}': where_clause_suffix,
         f'extractor.postgres_metadata.{PostgresMetadataExtractor.USE_CATALOG_AS_CLUSTER_NAME}': True,
-        f'extractor.postgres_metadata.extractor.sqlalchemy.{SQLAlchemyExtractor.CONN_STRING}': connection_string(),
+        f'extractor.postgres_metadata.extractor.sqlalchemy.{SQLAlchemyExtractor.CONN_STRING}': string_conexao_postgres,
         f'loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.NODE_DIR_PATH}': node_files_folder,
         f'loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.RELATION_DIR_PATH}': relationship_files_folder,
         f'publisher.neo4j.{neo4j_csv_publisher.NODE_FILES_DIR}': node_files_folder,
@@ -64,7 +61,7 @@ def extrair_metadados_postgres():
     job.launch()
 
 
-def indexar_metadados_postgresql():
+def indexar_metadados_postgres():
     extracted_search_data_path = '/var/tmp/amundsen/search_data.json'
 
     task = DefaultTask(loader=FSElasticsearchJSONLoader(),
