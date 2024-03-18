@@ -1,11 +1,12 @@
-# Teste Técnico (Airflow/Amundsen)
+# Teste Técnico (Data Engineer)
 
-## O que fazer neste desafio técnico?
+Proposta de solução para o [desafio de data engineering](https://github.com/caiuafranca/test_data_engineer).
 
-- [OK] Ambiente em docker
-- [OK] Dag para extrair os metadados do MySQL e salvar no Amundsen
-- [OK] Dag para extrair os metadados do Postgres e salvar no Amundsen
-- [NOK] (opcional) Subir um banco NoSQL e efetuar a extração dos metadados
+## O que fazer no desafio técnico?
+
+- Ambiente em docker (MySQL, Airflow, Amundsen)
+- Dag para extrair os metadados do MySQL e salvar no Amundsen
+- Dag para extrair os metadados do Postgres e salvar no Amundsen
 
 ## Arquitetura da solução
 
